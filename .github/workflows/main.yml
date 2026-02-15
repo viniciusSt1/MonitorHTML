@@ -1,0 +1,51 @@
+name: Monitor UFGD
+
+on:
+  schedule:
+    - cron: "*/20 * * * *"   # roda a cada 10 minutos
+  workflow_dispatch:         # permite rodar manualmente
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release
+
+    - name: Run monitor
+      env:
+        MONITOR_URL: ${{ secrets.MONITOR_URL }}
+        ULTRAMSG_URL: ${{ secrets.ULTRAMSG_URL }}
+        ULTRAMSG_TOKEN: ${{ secrets.ULTRAMSG_TOKEN }}
+        ULTRAMSG_TO: ${{ secrets.ULTRAMSG_TO }}
+      run: dotnet run --project UfgdMonitor
+
+    - name: Configure Git for commit
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "actions@github.com"
+
+    - name: Commit hash change if needed
+      run: |
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+
+        if [[ `git status --porcelain last_hash.txt` ]]; then
+          echo "Alterações detectadas. Commitando..."
+          git add last_hash.txt
+          git commit -m "Atualização automática do hash"
+          git push
+        else
+          echo "Nenhuma alteração detectada."
+        fi
