@@ -30,7 +30,7 @@ jobs:
         ULTRAMSG_URL: ${{ secrets.ULTRAMSG_URL }}
         ULTRAMSG_TOKEN: ${{ secrets.ULTRAMSG_TOKEN }}
         ULTRAMSG_TO: ${{ secrets.ULTRAMSG_TO }}
-      run: dotnet run --project UfgdMonitor
+      run: dotnet run --project MonitorHTML
 
     - name: Configure Git for commit
       run: |
