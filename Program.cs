@@ -8,7 +8,7 @@ class Program
 {
     static async Task Main()
     {
-        string url = Environment.GetEnvironmentVariable("MONITOR_URL");
+        string url_site = Environment.GetEnvironmentVariable("MONITOR_URL");
 
         string ultraUrl = Environment.GetEnvironmentVariable("ULTRAMSG_URL");
         string token = Environment.GetEnvironmentVariable("ULTRAMSG_TOKEN");
@@ -19,7 +19,7 @@ class Program
         try
         {
             using var http = new HttpClient();
-            var htmlBruto = await http.GetStringAsync(url);
+            var htmlBruto = await http.GetStringAsync(url_site);
             string html = LimparHtml(htmlBruto);
 
             //File.WriteAllText("pagina_baixada.html", html);
@@ -31,7 +31,7 @@ class Program
             {
                 Console.WriteLine("HTML mudou! Enviando alerta...");
 
-                string msg = "Atualização detectada, verifique em: \\ " + url;
+                string msg = "Atualização detectada, verifique em: \\ " + url_site;
                 await EnviarWhatsApp(ultraUrl, token, to, msg);
 
                 File.WriteAllText(hashFile, novoHash);
@@ -54,7 +54,7 @@ class Program
         }
     }
 
-    static string LimparHtml(string html)
+    static string LimparHtml(string html)   // Remover comentários de data de requisição etc
     {
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
@@ -62,7 +62,7 @@ class Program
         // Pegar apenas o <body>
         var body = doc.DocumentNode.SelectSingleNode("//body");
         if (body == null)
-            return ""; // Caso não tenha body
+            return "";
 
         // Remover comentários
         var comentarios = body.SelectNodes("//comment()");
