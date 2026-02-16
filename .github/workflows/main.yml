@@ -2,8 +2,11 @@ name: Monitor UFGD
 
 on:
   schedule:
-    - cron: "*/20 * * * *"   # roda a cada 10 minutos
-  workflow_dispatch:         # permite rodar manualmente
+    - cron: "*/50 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write 
 
 jobs:
   monitor:
@@ -12,6 +15,8 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }} # garante que o push funcione
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
@@ -39,8 +44,6 @@ jobs:
 
     - name: Commit hash change if needed
       run: |
-        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-
         if [[ `git status --porcelain last_hash.txt` ]]; then
           echo "Alterações detectadas. Commitando..."
           git add last_hash.txt
